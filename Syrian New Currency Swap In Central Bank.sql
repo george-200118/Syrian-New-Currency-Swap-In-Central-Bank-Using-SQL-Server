@@ -1,5 +1,4 @@
---*********George_394191 ÌæÑÌ ÇáãÇÙ ***************************
-
+لللل
 --ÅäÔÇÁ æ ÇÓÊÎÏÇã ÞÇÚÏÉ ÇáÈíÇäÇÊ CentralBank_CurrencySwap_DB
 CREATE DATABASE CentralBank_CurrencySwap_DB;
 USE CentralBank_CurrencySwap_DB;
