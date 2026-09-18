@@ -1,8 +1,7 @@
-لللل
---ÅäÔÇÁ æ ÇÓÊÎÏÇã ÞÇÚÏÉ ÇáÈíÇäÇÊ CentralBank_CurrencySwap_DB
+--إنشاء و استخدام قاعدة البيانات CentralBank_CurrencySwap_DB
 CREATE DATABASE CentralBank_CurrencySwap_DB;
 USE CentralBank_CurrencySwap_DB;
---ÅäÔÇÁ ÌÏæá ÇáÝÑÚ (Branch)
+--إنشاء جدول الفرع (Branch)
 CREATE TABLE Branch (
     BranchID INT IDENTITY(1,1) ,
     BranchName NVARCHAR(100) NOT NULL,
@@ -12,7 +11,7 @@ CREATE TABLE Branch (
     CONSTRAINT PK_Branch_BranchID PRIMARY KEY(BranchID),
     CONSTRAINT UNQ_Branch_BranchName UNIQUE(BranchName)
 )
---ÅäÔÇÁ ÌÏæá ÇáãæÙÝ (Employee)
+--إنشاء جدول الموظف (Employee)
 CREATE TABLE Employee (
    EmployeeID INT IDENTITY(1,1),
    BranchID INT NOT NULL,
@@ -28,12 +27,12 @@ CREATE TABLE Employee (
    CONSTRAINT UNQ_Employee_Email UNIQUE(Email),
    CONSTRAINT CHK_Employee_Phone CHECK(Phone LIKE '%[0-9+-()]%'),
    CONSTRAINT CHK_Employee_Email CHECK(Email LIKE '_%@____%.__%'),
-   CONSTRAINT CHK_Employee_Position CHECK (Position IN ('ÕÑÇÝ', 'ãÑÇÞÈ', 'ãÏíÑ ÇáÝÑÚ')),
+   CONSTRAINT CHK_Employee_Position CHECK (Position IN ('صراف', 'مراقب', 'مدير الفرع')),
 )
---ÊÚÏíá ÇáÌÏæá Branch ÈÅÖÇÝÉ Foregin Key ááÚÇãæÏ ManagerID ÈÚÏ ÅäÔÇÁ ÌÏæá Employee
+--تعديل الجدول Branch بإضافة Foregin Key للعامود ManagerID بعد إنشاء جدول Employee
 ALTER TABLE Branch 
 ADD CONSTRAINT FK_Branch_ManagerID FOREIGN KEY(ManagerID) REFERENCES Employee(EmployeeID)
---ÅäÔÇÁ ÌÏæá ÇáÚãíá (Customer)
+--إنشاء جدول العميل (Customer)
 CREATE TABLE Customer (
     CustomerID INT IDENTITY(1,1),
     NationalNumber CHAR(11) NULL,
@@ -49,18 +48,18 @@ CREATE TABLE Customer (
     CONSTRAINT CHK_Cistomer_Phone CHECK(Phone LIKE '%[0-9+-()]%'),
     CONSTRAINT CHK_Customer_NationalNumber CHECK (NationalNumber LIKE '%[0-9]%' And LEN(NationalNumber)=11),
     CONSTRAINT CHK_Customer_PassportNumber CHECK (PassportNumber LIKE 'P[0-9]%' And LEN(PassportNumber)=10),
-    CONSTRAINT CHK_Customer_Type CHECK (CustomerType IN ('ãæÇØä', 'ãÄÓÓÉ')),
+    CONSTRAINT CHK_Customer_Type CHECK (CustomerType IN ('مواطن', 'مؤسسة')),
     CONSTRAINT CHK_Customer_Identity CHECK(NationalNumber IS NOT NULL OR PassportNumber IS NOT NULL)
 )
--- ÝåÑÓ ÝÑíÏ áÜ NationalNumber (íÊÌÇåá ÇáÜ NULL)
+-- فهرس فريد لـ NationalNumber (يتجاهل الـ NULL)
 CREATE UNIQUE NONCLUSTERED INDEX IX_Customer_NationalNumber 
 ON Customer (NationalNumber) 
 WHERE NationalNumber IS NOT NULL;
--- ÝåÑÓ ÝÑíÏ áÜ PassportNumber (íÊÌÇåá ÇáÜ NULL)
+-- فهرس فريد لـ PassportNumber (يتجاهل الـ NULL)
 CREATE UNIQUE NONCLUSTERED INDEX IX_Customer_PassportNumber 
 ON Customer (PassportNumber) 
 WHERE PassportNumber IS NOT NULL;
---ÅäÔÇÁ ÌÏæá ÇáãÚÇãáÉ (Transaction)
+--إنشاء جدول المعاملة (Transaction)
 CREATE TABLE [Transaction] (
     TransactionID INT IDENTITY(1,1),
     BranchID INT NOT NULL,
@@ -78,25 +77,25 @@ CREATE TABLE [Transaction] (
     CONSTRAINT CHK_Transaction_NewAmount CHECK (NewAmount>10),
     CONSTRAINT CHK_Transaction_Commission CHECK (Commission>=0)
 ) 
---ÅäÔÇÁ ÌÏæá ÝÆÇÊ ÇáÚãáÇÊ (CurrencyCategory)
+--إنشاء جدول فئات العملات (CurrencyCategory)
 CREATE TABLE CurrencyCategory(
 	CurrencyCategoryID INT IDENTITY(1,1),
 	CategoryValue INT NOT NULL,
 	CategoryType NVARCHAR(10) NOT NULL,
 	CONSTRAINT PK_CurrencyCategory_CurrencyCategoryID PRIMARY KEY(CurrencyCategoryID),
 	CONSTRAINT CHK_CurrencyCategory_CategoryValue CHECK (CategoryValue>0),
-	CONSTRAINT CHK_CurrencyCategory_CategoryType  CHECK (CategoryType IN ('ÞÏíãÉ', 'ÌÏíÏÉ'))
+	CONSTRAINT CHK_CurrencyCategory_CategoryType  CHECK (CategoryType IN ('قديمة', 'جديدة'))
 )
---ÅäÔÇÁ ÌÏæá ÍÒã ÇáÚãáÉ ÇáÞÏíãÉ (OldCurrencyBulk)
+--إنشاء جدول حزم العملة القديمة (OldCurrencyBulk)
 CREATE TABLE OldCurrencyBulk (
     BulkID INT IDENTITY(1,1),
     BranchID INT NOT NULL,
     BulkStatus NVARCHAR(20) NOT NULL,
     Notes NTEXT NULL,
     CONSTRAINT PK_OldCurrencyBulk_BulkID PRIMARY KEY(BulkID),
-    CONSTRAINT CHK_OldCurrencyBulk_Status CHECK (BulkStatus IN('ãÓÊáãÉ','ãÚÏæÏÉ','ãÚÈÃÉ','ãÑÓáÉ Åáì ÇáãÑßÒ ','ãÏãÑÉ')) 
+    CONSTRAINT CHK_OldCurrencyBulk_Status CHECK (BulkStatus IN('مستلمة','معدودة','معبأة','مرسلة إلى المركز ','مدمرة')) 
 )
---ÅäÔÇÁ ÌÏæá ßÓÑ ÇáÚáÇÞÉ Èíä ÇáãÚÇãáÉ æ ÍÒãÉ ÇáÚãáÉ ÇáÞÏíãÉ (Transaction_OldCurrencyBulk)
+--إنشاء جدول كسر العلاقة بين المعاملة و حزمة العملة القديمة (Transaction_OldCurrencyBulk)
 CREATE TABLE Transaction_OldCurrencyBulk (
     TransactionID INT NOT NULL,
     BulkID INT NOT NULL,
@@ -107,7 +106,7 @@ CREATE TABLE Transaction_OldCurrencyBulk (
     CONSTRAINT FK_Transaction_OldCurrencyBulk_BulkID FOREIGN KEY (BulkID) REFERENCES OldCurrencyBulk(BulkID),
     CONSTRAINT CHK_Transaction_OldCurrencyBulk_Amount CHECK (Amount >1000)
 )
---ÅäÔÇÁ ÌÏæá ßÓÑ ÇáÚáÇÞÉ Èíä ÝÆÇÊ ÇáÚãáÇÊ æ ÍÒãÉ ÇáÚãáÉ ÇáÞÏíãÉ (CurrencyCategory_OldCurrencyBulk)
+--إنشاء جدول كسر العلاقة بين فئات العملات و حزمة العملة القديمة (CurrencyCategory_OldCurrencyBulk)
 CREATE TABLE CurrencyCategory_OldCurrencyBulk (
     CurrencyCategoryID INT NOT NULL,
     BulkID INT NOT NULL,
@@ -118,7 +117,7 @@ CREATE TABLE CurrencyCategory_OldCurrencyBulk (
     CONSTRAINT FK_CurrencyCategory_OldCurrencyBulk_BulkID FOREIGN KEY (BulkID) REFERENCES OldCurrencyBulk(BulkID),
     CONSTRAINT CHK_CurrencyCategory_OldCurrencyBulk_Quantity CHECK (Quantity >0)
 )
---ÅäÔÇÁ ÌÏæá ÍÑßÇÊ ÇáÚãáÉ ÇáÌÏíÏÉ (NewCurrencyMovement)
+--إنشاء جدول حركات العملة الجديدة (NewCurrencyMovement)
 CREATE TABLE NewCurrencyMovement(
     MovementID INT IDENTITY(1,1),
     BranchID INT NOT NULL,
@@ -128,9 +127,9 @@ CREATE TABLE NewCurrencyMovement(
     CONSTRAINT PK_NewCurrencyStorage_BulkID PRIMARY KEY(MovementID),
     CONSTRAINT FK_NewCurrencyMovement_BranchID FOREIGN KEY(BranchID) REFERENCES Branch(BranchID) ,
     CONSTRAINT CHK_NewCurrencyMovement_MovementType
-    CHECK (MovementType IN('ÊÒæíÏ ááãÑßÒ','ÕÑÝ áÚãíá','ÊÍæíá áÝÑÚ ÂÎÑ'))
+    CHECK (MovementType IN('تزويد للمركز','صرف لعميل','تحويل لفرع آخر'))
 )
---ÅäÔÇÁ ÌÏæá ßÓÑ ÇáÚáÇÞÉ Èíä ÝÆÇÊ ÇáÚãáÇÊ æ ÍÑßÉ ÇáÚãáÉ ÇáÌÏíÏÉ (CurrencyCategory_NewCurrencyMovement)
+--إنشاء جدول كسر العلاقة بين فئات العملات و حركة العملة الجديدة (CurrencyCategory_NewCurrencyMovement)
 CREATE TABLE CurrencyCategory_NewCurrencyMovement (
     CurrencyCategoryID INT NOT NULL,
     MovementID INT NOT NULL,
@@ -143,77 +142,77 @@ CREATE TABLE CurrencyCategory_NewCurrencyMovement (
 	REFERENCES NewCurrencyMovement(MovementID),
     CONSTRAINT CHK_CurrencyCategory_NewCurrencyMovement_Quantity CHECK (Quantity >0)
 )
---ÅÏÎÇá ÇáÝÑæÚ (Branch)
+--إدخال الفروع (Branch)
 INSERT INTO Branch (BranchName, City, Address) VALUES
-('ÝÑÚ ÏãÔÞ ÇáãÑßÒí', 'ÍáÈ', 'ÓÇÍÉ ÇáÓÈÚ ÈÍÑÇÊ'),--ÓíÊã ÊÚÏíáå áÇÍÞÇ
-('ÝÑÚ ÍãÕ ÇáãÑßÒí', 'ÍãÕ', 'ÔÇÑÚ ÈÇÈ åæÏ'),
-('ÝÑÚ ÇáÍÓßÉ ÇáãÑßÒí ', 'ÇáÍÓßÉ', 'ÔÇÑÚ ÇáÎÇÈæÑ'),
-('ÝÑÚ ÇááÇÐÞíÉ ÇáãÑßÒí', 'ÇááÇÐÞíÉ', 'ÔÇÑÚ 8 ÂÐÇÑ¡ÈÚÏ ÞíÇÏÉ ÇáÔÑØÉ'),
-('ÝÑÚ ÏÑÚÇ ÇáãÑßÒí', 'ÏÑÚÇ', 'ÔÇÑÚ ÇáËæÑÉ'),
-('ÝÑÚ ÏíÑ ÇáÒæÑ ÇáãÑßÒí', 'ÏíÑ ÇáÒæÑ', 'ÔÇÑÚ ÛÇÒí ÚíÇÔ'),
-('ÝÑÚ ÏíÑ ÇáÒæÑ ÇáãÑßÒí-2', 'ÏíÑ ÇáÒæÑ', 'ÇáãíÇÏíä'),
-('ÝÑÚ ÍãÇÉ ÇáãÑßÒí ', 'ÍãÇÉ', 'ÔÇÑÚ ÇáÞæÊáí'),
-('ÝÑÚ ÏãÔÞ ÇáãÑßÒí-2', 'ÏãÔÞ', 'ÔÇÑÚ 29 ÃíÇÑ')
---ÅÏÎÇá ÇáãæÙÝíä (Employee)
+('فرع دمشق المركزي', 'دمشق', 'ساحة السبع بحرات'),
+('فرع حمص المركزي', 'حمص', 'شارع باب هود'),
+('فرع الحسكة المركزي ', 'الحسكة', 'شارع الخابور'),
+('فرع اللاذقية المركزي', 'اللاذقية', 'شارع 8 آذار،بعد قيادة الشرطة'),
+('فرع درعا المركزي', 'درعا', 'شارع الثورة'),
+('فرع دير الزور المركزي', 'دير الزور', 'شارع غازي عياش'),
+('فرع دير الزور المركزي-2', 'دير الزور', 'الميادين'),
+('فرع حماة المركزي ', 'حماة', 'شارع القوتلي'),
+('فرع دمشق المركزي-2', 'دمشق', 'شارع 29 أيار')
+--إدخال الموظفين (Employee)
 INSERT INTO Employee (BranchID, FirstName, LastName,Phone,Email,Address,Position) VALUES
---ãæÙÝæä ãÏÑÇÁ ÃÝÑÚ
-(1, 'ããÏæÍ', 'ßÇãá', '0932620825', 'mamdohk@gmail.com', 'ÏãÔÞ-ÇÊÓÊÑÇÏ ÇáãÒÉ', 'ãÏíÑ ÇáÝÑÚ'),
-(2, 'ÓÇãÑ', 'ÚíÓì', '0933652108', 'sameri@gmail.com', 'ÍãÕ-ÔÇÑÚ ÈÇÈ åæÏ', 'ãÏíÑ ÇáÝÑÚ'), 
-(3, 'ÍÓä', 'íæÓÝ', '0936123459', 'hyoussef@yahoo.com', 'ÇáÍÓßÉ-ÔÇÑÚ ÇáÎÇÈæÑ', 'ãÏíÑ ÇáÝÑÚ'), 
-(4, 'Ñíã', 'ÇáÃÍãÏ', '0999632501', 'reemalahmad@gmail.com', 'ÇááÇÐÞíÉ-ÔÇÑÚ 8 ÂÐÇÑ', 'ãÏíÑ ÇáÝÑÚ'), 
-(5, 'ÓÇÑÉ', 'ÇáÌæÏÉ', '0934148825', 'joddehs1965@hotmail.com', 'ÏÑÚÇ-ÔÇÑÚ ÇáËæÑÉ', 'ãÏíÑ ÇáÝÑÚ'), 
-(6, 'ÚãÇÑ', 'ÓÚÏ ÇáÏíä', '0991123456', 'ammarsaadd@gmail.com', 'ÏíÑ ÇáÒæÑ- ÔÇÑÚ ÛÇÒí ÚíÇÔ', 'ãÏíÑ ÇáÝÑÚ'), 
-(7, 'ÚÈÏ ÇáÑÍíã', 'ÇáÓÊÇÑ', '0923147852', 'arsttar@gmail.com', 'ÏíÑ ÇáÒæÑ- ÔÇÑÚ ÛÇÒí ÚíÇÔ', 'ãÏíÑ ÇáÝÑÚ'), 
-(8, 'ãäì', 'ÇáÓÇáã', '0998753951', 'mounaalsalem@gmail.com', 'ÍãÇÉ-ÔÇÑÚ ÇáÞæÊáí', 'ãÏíÑ ÇáÝÑÚ'),
-(9, 'ÑÇãí', 'ÓÚÏ Çááå', '0986201479', 'rsaadalah@gmail.com', 'ÏãÔÞ-ÇÊÓÊÑÇÏ ÇáãÒÉ', 'ãÏíÑ ÇáÝÑÚ'),
---ãæÙÝæä ÕÑÇÝæä
-(1, 'ãÍãÏ', 'ÇáÍÓíä', '0963214452', 'mhdhuss@gmail.com', 'ÏãÔÞ-ÔÇÑÚ 29 ÃíÇÑ', 'ÕÑÇÝ'), 
-(1, 'áãì', 'ÍÏÇÏ', '0932111222', 'lhaddad@gmail.com', 'ÏãÔÞ-ÓÇÍÉ ÇáÚÈÇÓííä', 'ÕÑÇÝ'), 
-(2, 'ãÍãÏ', 'ÇáÔÇáØ', '0933652103', 'mhdshalet@gmail.com', 'ÍãÕ-ÔÇÑÚ ÈÇÈ åæÏ', 'ÕÑÇÝ'), 
-(2, 'ÓãíÑÉ', 'ÍÓä', '0939258741', ' samirahassan@gmail.com', 'ÍãÕ-ÔÇÑÚ ÈÇÈ åæÏ', 'ÕÑÇÝ'), 
-(3, 'ÓÇãíÉ', 'ÇáÚÇÈÏ', '0962147852', 'abedsamia@gmail.com', 'ÇáÍÓßÉ-ÔÇÑÚ ÇáÎÇÈæÑ', 'ÕÑÇÝ'), 
-(3, 'ÚÈíÑ', 'ÇáåÇãÓ', '0975123820', 'ahames@gmail.com', 'ÇáÍÓßÉ-ÔÇÑÚ ÇáÎÇÈæÑ', 'ÕÑÇÝ'), 
-(4, 'ÓÇáã', 'ÇáãÍãÏ', '0933258791', 'salmhmd@gmail.com', 'ÇááÇÐÞíÉ-ÔÇÑÚ 8 ÂÐÇÑ', 'ÕÑÇÝ'), 
-(4, 'ãÄäÓ', 'ÇáÎØíÈ', '0963457831', 'moukh@gmail.com', 'ÇááÇÐÞíÉ-ÔÇÑÚ 8 ÂÐÇÑ', 'ÕÑÇÝ'), 
-(6, 'ÓãÑ', 'ÔÍÇÏÉ', '0996520140', 'samarah@gmail.com', 'ÏíÑ ÇáÒæÑ-ÔÇÑÚ ÛÇÒí ÚíÇÔ', 'ÕÑÇÝ'), 
-(6, 'ÓãÇ', 'ÇáÃØÑÔ', '0961025147', 'samaatr@gmail.com', 'ÏíÑ ÇáÒæÑ-ÔÇÑÚ ÛÇÒí ÚíÇÔ', 'ÕÑÇÝ'), 
-(7, 'ÑÇãÒ', 'ÈÇÔÇ', '0992145203', 'ramezb@gmail.com', 'ÏíÑ ÇáÒæÑ-ÇáãíÇÏíä', 'ÕÑÇÝ'), 
-(7, 'ßÑíã', 'ÒíÇÏÉ', '0952147863', 'karim-z@gmail.com', 'ÏíÑ ÇáÒæÑ-ÇáãíÇÏíä', 'ÕÑÇÝ'), 
-(9, 'ÍÇÝÙ', 'ÇáÚÇÈÏ', '0961207860', 'habed@gmail.com', 'ÏãÔÞ-ÇáÚÏæí', 'ÕÑÇÝ'), 
-(9, 'Òíä', 'äÇÕÑ', '0932547814', 'zainnaser@gmail.com', 'ÏãÔÞ-ÔÇÑÚ ÈÛÏÇÏ', 'ÕÑÇÝ'), 
---ãæÙÝæä ãÑÇÞÈæä
-(1, 'ÃÍãÏ', 'ÈÇÔÇ', '0996321456', 'ahmad25b@gmail.com', 'ÏãÔÞ-ÓÇÍÉ ÇáÃãæííä', 'ãÑÇÞÈ'), 
-(1, 'ÓãíÑ', 'ÏÇææÏ', '0933445566', 'samirdaoud@gmail.com', 'ÏãÔÞ-ÇáãÇáßí', 'ãÑÇÞÈ'), 
-(2, 'ÓÇãí', 'äÍÇÓ', '0962315782', 'samina@gmail.com', 'ÍãÕ-ÔÇÑÚ ÈÇÈ åæÏ', 'ãÑÇÞÈ'),
-(2, 'äÈíá', 'ÛÓÇä', '0992658978', 'naghassan@gmail.com', 'ÍãÕ-ÔÇÑÚ ÈÇÈ åæÏ', 'ãÑÇÞÈ') 
---ÊÚííä ãÏíÑ áßá ÝÑÚ
-UPDATE Branch SET ManagerID = 1 WHERE BranchID = 1; -- ÝÑÚ ÏãÔÞ ÇáãÑßÒí
-UPDATE Branch SET ManagerID = 2 WHERE BranchID = 2; -- ÝÑÚ ÍãÕ ÇáãÑßÒí
-UPDATE Branch SET ManagerID = 3 WHERE BranchID = 3; -- ÝÑÚ ÇáÍÓßÉ ÇáãÑßÒí
-UPDATE Branch SET ManagerID = 4 WHERE BranchID = 4; -- ÝÑÚ ÇááÇÐÞíÉ ÇáãÑßÒí
-UPDATE Branch SET ManagerID = 5 WHERE BranchID = 5; -- ÝÑÚ ÏÑÚÇ ÇáãÑßÒí
-UPDATE Branch SET ManagerID = 6 WHERE BranchID = 6; -- ÝÑÚ ÏíÑ ÇáÒæÑ ÇáãÑßÒí
-UPDATE Branch SET ManagerID = 7 WHERE BranchID = 7; -- ÝÑÚ ÏíÑ ÇáÒæÑ-2
-UPDATE Branch SET ManagerID = 8 WHERE BranchID = 8; -- ÝÑÚ ÍãÇÉ ÇáãÑßÒí
-UPDATE Branch SET ManagerID = 9 WHERE BranchID = 9; -- ÝÑÚ ÏãÔÞ-2
---ÅÏÎÇá ÚãáÇÁ (Customer)
---ÚãáÇÁ ãæÇØäæä ÈÑÞã æØäí
+--موظفون مدراء أفرع
+(1, 'ممدوح', 'كامل', '0932620825', 'mamdohk@gmail.com', 'دمشق-اتستراد المزة', 'مدير الفرع'),
+(2, 'سامر', 'عيسى', '0933652108', 'sameri@gmail.com', 'حمص-شارع باب هود', 'مدير الفرع'), 
+(3, 'حسن', 'يوسف', '0936123459', 'hyoussef@yahoo.com', 'الحسكة-شارع الخابور', 'مدير الفرع'), 
+(4, 'ريم', 'الأحمد', '0999632501', 'reemalahmad@gmail.com', 'اللاذقية-شارع 8 آذار', 'مدير الفرع'), 
+(5, 'سارة', 'الجودة', '0934148825', 'joddehs1965@hotmail.com', 'درعا-شارع الثورة', 'مدير الفرع'), 
+(6, 'عمار', 'سعد الدين', '0991123456', 'ammarsaadd@gmail.com', 'دير الزور- شارع غازي عياش', 'مدير الفرع'), 
+(7, 'عبد الرحيم', 'الستار', '0923147852', 'arsttar@gmail.com', 'دير الزور- شارع غازي عياش', 'مدير الفرع'), 
+(8, 'منى', 'السالم', '0998753951', 'mounaalsalem@gmail.com', 'حماة-شارع القوتلي', 'مدير الفرع'),
+(9, 'رامي', 'سعد الله', '0986201479', 'rsaadalah@gmail.com', 'دمشق-اتستراد المزة', 'مدير الفرع'),
+--موظفون صرافون
+(1, 'محمد', 'الحسين', '0963214452', 'mhdhuss@gmail.com', 'دمشق-شارع 29 أيار', 'صراف'), 
+(1, 'لمى', 'حداد', '0932111222', 'lhaddad@gmail.com', 'دمشق-ساحة العباسيين', 'صراف'), 
+(2, 'محمد', 'الشالط', '0933652103', 'mhdshalet@gmail.com', 'حمص-شارع باب هود', 'صراف'), 
+(2, 'سميرة', 'حسن', '0939258741', ' samirahassan@gmail.com', 'حمص-شارع باب هود', 'صراف'), 
+(3, 'سامية', 'العابد', '0962147852', 'abedsamia@gmail.com', 'الحسكة-شارع الخابور', 'صراف'), 
+(3, 'عبير', 'الهامس', '0975123820', 'ahames@gmail.com', 'الحسكة-شارع الخابور', 'صراف'), 
+(4, 'سالم', 'المحمد', '0933258791', 'salmhmd@gmail.com', 'اللاذقية-شارع 8 آذار', 'صراف'), 
+(4, 'مؤنس', 'الخطيب', '0963457831', 'moukh@gmail.com', 'اللاذقية-شارع 8 آذار', 'صراف'), 
+(6, 'سمر', 'شحادة', '0996520140', 'samarah@gmail.com', 'دير الزور-شارع غازي عياش', 'صراف'), 
+(6, 'سما', 'الأطرش', '0961025147', 'samaatr@gmail.com', 'دير الزور-شارع غازي عياش', 'صراف'), 
+(7, 'رامز', 'باشا', '0992145203', 'ramezb@gmail.com', 'دير الزور-الميادين', 'صراف'), 
+(7, 'كريم', 'زيادة', '0952147863', 'karim-z@gmail.com', 'دير الزور-الميادين', 'صراف'), 
+(9, 'حافظ', 'العابد', '0961207860', 'habed@gmail.com', 'دمشق-العدوي', 'صراف'), 
+(9, 'زين', 'ناصر', '0932547814', 'zainnaser@gmail.com', 'دمشق-شارع بغداد', 'صراف'), 
+--موظفون مراقبون
+(1, 'أحمد', 'باشا', '0996321456', 'ahmad25b@gmail.com', 'دمشق-ساحة الأمويين', 'مراقب'), 
+(1, 'سمير', 'داوود', '0933445566', 'samirdaoud@gmail.com', 'دمشق-المالكي', 'مراقب'), 
+(2, 'سامي', 'نحاس', '0962315782', 'samina@gmail.com', 'حمص-شارع باب هود', 'مراقب'),
+(2, 'نبيل', 'غسان', '0992658978', 'naghassan@gmail.com', 'حمص-شارع باب هود', 'مراقب') 
+--تعيين مدير لكل فرع
+UPDATE Branch SET ManagerID = 1 WHERE BranchID = 1; -- فرع دمشق المركزي
+UPDATE Branch SET ManagerID = 2 WHERE BranchID = 2; -- فرع حمص المركزي
+UPDATE Branch SET ManagerID = 3 WHERE BranchID = 3; -- فرع الحسكة المركزي
+UPDATE Branch SET ManagerID = 4 WHERE BranchID = 4; -- فرع اللاذقية المركزي
+UPDATE Branch SET ManagerID = 5 WHERE BranchID = 5; -- فرع درعا المركزي
+UPDATE Branch SET ManagerID = 6 WHERE BranchID = 6; -- فرع دير الزور المركزي
+UPDATE Branch SET ManagerID = 7 WHERE BranchID = 7; -- فرع دير الزور-2
+UPDATE Branch SET ManagerID = 8 WHERE BranchID = 8; -- فرع حماة المركزي
+UPDATE Branch SET ManagerID = 9 WHERE BranchID = 9; -- فرع دمشق-2
+--إدخال عملاء (Customer)
+--عملاء مواطنون برقم وطني
 INSERT INTO Customer (FirstName,LastName,DateOfBirth,Phone,CustomerType,NationalNumber) VALUES
-('ÝÇØãÉ', 'ãÍãÏ','2000-01-23', '0932121345', 'ãæÇØä', '01010001010'),
-('ÍÓíä', 'ÇáÃßÑã','1995-10-23', '0962134529', 'ãæÇØä', '01020002061'),
-('áíäÇ', 'ßÑã','1968-06-01', '0965214523', 'ãæÇØä', '03030001002'),
-('ÛÓÇä', 'ÚÈæÏ',NULL, '0931025000', 'ãæÇØä', '01010001634'),
-('ÚÈÏ ÇáãÌíÏ', 'ÇáÓÈíÚí',NULL, '0988123901', 'ãæÇØä', '08020003063')
---ÚãáÇÁ ãæÇØäæä ÈÌæÇÒ ÓÝÑ
+('فاطمة', 'محمد','2000-01-23', '0932121345', 'مواطن', '01010001010'),
+('حسين', 'الأكرم','1995-10-23', '0962134529', 'مواطن', '01020002061'),
+('لينا', 'كرم','1968-06-01', '0965214523', 'مواطن', '03030001002'),
+('غسان', 'عبود',NULL, '0931025000', 'مواطن', '01010001634'),
+('عبد المجيد', 'السبيعي',NULL, '0988123901', 'مواطن', '08020003063')
+--عملاء مواطنون بجواز سفر
 INSERT INTO Customer (FirstName,LastName,DateOfBirth,Phone,CustomerType,PassportNumber) VALUES
-('ÈÇÓá', 'ÃÓÚÏ','2010-09-15', '+9623221585', 'ãæÇØä', 'P129125111'),
-('ÓÇãÑ', 'ÇáÓíÏ','1982-02-28', '+9663657899', 'ãæÇØä', 'P123546897'),
-('ÈÇÓãÉ', 'ÇáÍáÇÞ',NULL, '+961125628', 'ãæÇØä', 'P125874136')
---ãÄÓÓÇÊ ÈÑÞã æØäí Ãæ ÌæÇÒ ÓÝÑ
+('باسل', 'أسعد','2010-09-15', '+9623221585', 'مواطن', 'P129125111'),
+('سامر', 'السيد','1982-02-28', '+9663657899', 'مواطن', 'P123546897'),
+('باسمة', 'الحلاق',NULL, '+961125628', 'مواطن', 'P125874136')
+--مؤسسات برقم وطني أو جواز سفر
 INSERT INTO Customer (FirstName,LastName,DateOfBirth,Phone,CustomerType,NationalNumber,PassportNumber) VALUES
-('ÔÑßÉ ÇáåÑã', 'ááÍæÇáÇÊ ÇáãÇáíÉ',NULL, '0114478652', 'ãÄÓÓÉ', '01010005006', NULL),
-('ÔÑßÉ ÇáÝÄÇÏ ', 'ááÍæÇáÇÊ ÇáãÇáíÉ',NULL, '0112325230', 'ãÄÓÓÉ', NULL, 'P183006131')
---ÅÏÎÇá ãÚÇãáÇÊ (Transaction)
+('شركة الهرم', 'للحوالات المالية',NULL, '0114478652', 'مؤسسة', '01010005006', NULL),
+('شركة الفؤاد ', 'للحوالات المالية',NULL, '0112325230', 'مؤسسة', NULL, 'P183006131')
+--إدخال معاملات (Transaction)
 INSERT INTO [Transaction] (BranchID, EmployeeID, CustomerID, OldAmount, NewAmount, Commission,TransactionDate) VALUES
 (1, 10, 1, 11000000.00, 110000.00,11000.00,'2026-01-04 13:30:00'),
 (1, 10, 2,  6000000.00, 60000.00,6000.00,'2026-01-06 10:00:00'),
@@ -241,127 +240,104 @@ INSERT INTO [Transaction] (BranchID, EmployeeID, CustomerID, OldAmount, NewAmoun
 (9, 22, 8, 13000000.00, 130000.00,NULL, '2026-03-20 15:00:00'),
 (9, 23, 10, 19000000.00, 190000.00,NULL, '2026-03-20 13:00:00'),
 (9, 22, 4, 13000000.00, 130000.00,NULL, '2026-02-14 16:00:00')
---ÅÏÎÇá ÝÆÇÊ ÇáÚãáÇÊ (Transaction)
+--إدخال فئات العملات (Transaction)
 INSERT INTO CurrencyCategory (CategoryValue,CategoryType) VALUES
---ÝÆÇÊ ÞÏíãÉ
-(1000, 'ÞÏíãÉ'),
-(2000, 'ÞÏíãÉ'),
-(5000, 'ÞÏíãÉ'),
---ÝÆÇÊ ÌÏíÏÉ
-(10, 'ÌÏíÏÉ'),
-(25, 'ÌÏíÏÉ'),
-(50, 'ÌÏíÏÉ'),
-(100, 'ÌÏíÏÉ'),
-(200, 'ÌÏíÏÉ'),
-(500, 'ÌÏíÏÉ')
---ÅÏÎÇá ÍÒã ááÚãáÉ ÇáÞÏíãÉ
+--فئات قديمة
+(1000, 'قديمة'),
+(2000, 'قديمة'),
+(5000, 'قديمة'),
+--فئات جديدة
+(10, 'جديدة'),
+(25, 'جديدة'),
+(50, 'جديدة'),
+(100, 'جديدة'),
+(200, 'جديدة'),
+(500, 'جديدة')
+--إدخال حزم للعملة القديمة
 INSERT INTO OldCurrencyBulk (BranchID, BulkStatus,Notes) VALUES
---ÍÒã ãÓÊáãÉ
-(1, 'ãÓÊáãÉ' , 'Êã ÇÓÊáÇã ÍÒãÉ  ãä ÚÏÉ ãÚÇãáÇÊ ãä ÝÆÉ 1000'),
-(1, 'ãÓÊáãÉ' , ' Êã ÇÓÊáÇã ÍÒãÉ  ãä ÚÏÉ ãÚÇãáÇÊ ãä ÝÆÉ 2000'),
-(1, 'ãÓÊáãÉ' , ' Êã ÇÓÊáÇã ÍÒãÉ  ãä ÚÏÉ ãÚÇãáÇÊ ãä ÝÆÉ 5000'),
---ÍÒã ãÚÏæÏÉ
-(2, 'ãÚÏæÏÉ' , 'Êã ÚÏ ÍÒãÉ ãä ÝÆÉ 1000'),
-(2, 'ãÚÏæÏÉ' , 'Êã ÚÏ ÍÒãÉ ãä ÝÆÉ 2000'),
-(2, 'ãÚÏæÏÉ' , 'Êã ÚÏ ÍÒãÉ ãä ÝÆÉ 5000'),
---ÍÒã ãÚÈÃÉ
-(3, 'ãÚÈÃÉ' , 'Êã ÊÚÈÆÉ ÍÒãÉ ãä ÝÆÉ 1000 ááÔÍä'),
-(3, 'ãÚÈÃÉ', 'Êã ÊÚÈÆÉ ÍÒãÉ ãä ÝÆÉ 2000 ááÔÍä'),
-(3, 'ãÚÈÃÉ', 'Êã ÊÚÈÆÉ ÍÒãÉ ãä ÝÆÉ 5000 ááÔÍä'),
---ÍÒã ãÑÓáÉ Åáì ÇáãÑßÒ
-(7, 'ãÑÓáÉ Åáì ÇáãÑßÒ', 'Êã ÅÑÓÇá ÍÒãÉ ãä ÝÆÉ 1000 ááÝÑÚ ÇáãÑßÒí'),
-(7, 'ãÑÓáÉ Åáì ÇáãÑßÒ', 'Êã ÅÑÓÇá ÍÒãÉ ãä ÝÆÉ 2000 ááÝÑÚ ÇáãÑßÒí'),
-(7, 'ãÑÓáÉ Åáì ÇáãÑßÒ', 'Êã ÅÑÓÇá ÍÒãÉ ãä ÝÆÉ 5000 ááÝÑÚ ÇáãÑßÒí'),
---ÍÒã ãÏãÑÉ
-(6,'ãÏãÑÉ', 'Êã ÊÏãíÑ ÍÒãÉ ãä ÝÆÉ 1000 ÇáÞÇÏãÉ ãä ÝÑÚ ÇáãíÇÏíä'),
-(6,'ãÏãÑÉ', 'Êã ÊÏãíÑ ÍÒãÉ ãä ÝÆÉ 2000 ÇáÞÇÏãÉ ãä ÝÑÚ ÇáãíÇÏíä'),
-(6,'ãÏãÑÉ', 'Êã ÊÏãíÑ ÍÒãÉ ãä ÝÆÉ 5000 ÇáÞÇÏãÉ ãä ÝÑÚ ÇáãíÇÏíä')
---ÅÏÎÇáÇÊ áÑÈØ ÝÆÇÊ ÇáÚãáÇÊ æ ÇáÍÒãÇÊ (CurrencyCategory_OldCurrencyBulk)
+--حزم مستلمة
+(1, 'مستلمة' , 'تم استلام حزمة  من عدة معاملات من فئة 1000'),
+(1, 'مستلمة' , ' تم استلام حزمة  من عدة معاملات من فئة 2000'),
+(1, 'مستلمة' , ' تم استلام حزمة  من عدة معاملات من فئة 5000'),
+--حزم معدودة
+(2, 'معدودة' , 'تم عد حزمة من فئة 1000'),
+(2, 'معدودة' , 'تم عد حزمة من فئة 2000'),
+(2, 'معدودة' , 'تم عد حزمة من فئة 5000'),
+--حزم معبأة
+(3, 'معبأة' , 'تم تعبئة حزمة من فئة 1000 للشحن'),
+(3, 'معبأة', 'تم تعبئة حزمة من فئة 2000 للشحن'),
+(3, 'معبأة', 'تم تعبئة حزمة من فئة 5000 للشحن'),
+--حزم مرسلة إلى المركز
+(7, 'مرسلة إلى المركز', 'تم إرسال حزمة من فئة 1000 للفرع المركزي'),
+(7, 'مرسلة إلى المركز', 'تم إرسال حزمة من فئة 2000 للفرع المركزي'),
+(7, 'مرسلة إلى المركز', 'تم إرسال حزمة من فئة 5000 للفرع المركزي'),
+--حزم مدمرة
+(6,'مدمرة', 'تم تدمير حزمة من فئة 1000 القادمة من فرع الميادين'),
+(6,'مدمرة', 'تم تدمير حزمة من فئة 2000 القادمة من فرع الميادين'),
+(6,'مدمرة', 'تم تدمير حزمة من فئة 5000 القادمة من فرع الميادين')
+--إدخالات لربط فئات العملات و الحزمات (CurrencyCategory_OldCurrencyBulk)
 INSERT INTO CurrencyCategory_OldCurrencyBulk(BulkID, CurrencyCategoryID,Quantity) VALUES
---ÊæÒíÚ ÍÒãÉ ÇáÚãáÉ ÇáÞÏíãÉ Úáì ÚÏÉ ÝÆÇÊ
+--توزيع حزمة العملة القديمة على عدة فئات
 (2,3,1000),
 (2,2,3000)
---ÅÏÎÇáÇÊ áÑÈØ ÇáãÚÇãáÇÊ æ ÇáÍÒãÇÊ (Transaction_OldCurrencyBulk)
+--إدخالات لربط المعاملات و الحزمات (Transaction_OldCurrencyBulk)
 INSERT INTO Transaction_OldCurrencyBulk(BulkID, TransactionID,Amount) VALUES
---ÍÒãÉ æÇÍÏÉ ãä ãÚÇãáÉ æÇÍÏÉ
+--حزمة واحدة من معاملة واحدة
 (1,1,11000000),
---ÍÒãÉ ãä ãÚÇãáÊíä
+--حزمة من معاملتين
 (2,2,6000000),
 (2,3,5000000),
---ãÚÇãáÉ ãÌÒÃÉ Åáì ÃßËÑ ãä ÍÒãÉ
+--معاملة مجزأة إلى أكثر من حزمة
 (3,4,2500000),
 (4,4,2500000)
---ÅÏÎÇáÇÊ áÍÑßÇÊ ÇáÚãáÉ ÇáÌÏíÏÉ (NewCurrencyMovement)
+--إدخالات لحركات العملة الجديدة (NewCurrencyMovement)
 INSERT INTO NewCurrencyMovement (BranchID,MovementType,Amount,Notes) VALUES
---ÍÑßÇÊ ÊÒæíÏ ÇáÝÑæÚ ááÚãáÉ ÇáÌÏíÏÉ
-(1, 'ÊÒæíÏ ááãÑßÒ' ,1000000, ' ÊÒæíÏ ááãÑßÒ ÇáÑÆíÓí ãä ÝÆÉ 10'),
-(1,'ÊÒæíÏ ááãÑßÒ' ,2500000, ' ÊÒæíÏ ááãÑßÒ ÇáÑÆíÓí ãä ÝÆÉ 25'),
-(1, 'ÊÒæíÏ ááãÑßÒ' ,5000000, ' ÊÒæíÏ ááãÑßÒ ÇáÑÆíÓí ãä ÝÆÉ 50'),
-(1, 'ÊÒæíÏ ááãÑßÒ' ,10000000, ' ÊÒæíÏ ááãÑßÒ ÇáÑÆíÓí ãä ÝÆÉ 100'),
-(1, 'ÊÒæíÏ ááãÑßÒ' ,2000000, ' ÊÒæíÏ ááãÑßÒ ÇáÑÆíÓí ãä ÝÆÉ 200'),
-(1, 'ÊÒæíÏ ááãÑßÒ' ,5000000, ' ÊÒæíÏ ááãÑßÒ ÇáÑÆíÓí ãä ÝÆÉ 500'),
---ÍÑßÇÊ ÇÓÊåáÇß ÇáÚãáÉ ÇáÌÏíÏÉ áÕÑÝåÇ ááÚãáÇÁ
-(1, 'ÕÑÝ áÚãíá' ,-10000, 'ÇÓÊÈÏÇá ÚãáÉ ÞÏíãÉ'),
-(1, 'ÕÑÝ áÚãíá' ,-25000, 'ÇÓÊÈÏÇá ÚãáÉ ÞÏíãÉ'),
-(1, 'ÕÑÝ áÚãíá' ,-50000, 'ÇÓÊÈÏÇá ÚãáÉ ÞÏíãÉ'),
-(1, 'ÕÑÝ áÚãíá' ,-100000, 'ÇÓÊÈÏÇá ÚãáÉ ÞÏíãÉ'),
-(1, 'ÕÑÝ áÚãíá' ,-500000, 'ÇÓÊÈÏÇá ÚãáÉ ÞÏíãÉ'),
---ÍÑßÉ áÊÍæíá ãä ÝÑÚ ãÑßÒí áÝÑÚ ÂÎÑ
-(1,'ÊÍæíá áÝÑÚ ÂÎÑ' ,-5000000, ' ÊÍæíá ãÈáÛ 5000000 áÝÑÚ ÍãÕ ÇáãÑßÒí '),
---ÍÑßÉ áÇÓÊáÇã ÇáãÈáÛ ÇáãÍæá ãä ÇáÝÑÚ ÇáãÑßÒí
-(2, 'ÊÒæíÏ ááãÑßÒ' ,5000000, ' æÕæá ãÈáÛ5000000 ãä ÇáãÑßÒ ÇáÑÆíÓí ')
+--حركات تزويد الفروع للعملة الجديدة
+(1, 'تزويد للمركز' ,1000000, ' تزويد للمركز الرئيسي من فئة 10'),
+(1,'تزويد للمركز' ,2500000, ' تزويد للمركز الرئيسي من فئة 25'),
+(1, 'تزويد للمركز' ,5000000, ' تزويد للمركز الرئيسي من فئة 50'),
+(1, 'تزويد للمركز' ,10000000, ' تزويد للمركز الرئيسي من فئة 100'),
+(1, 'تزويد للمركز' ,2000000, ' تزويد للمركز الرئيسي من فئة 200'),
+(1, 'تزويد للمركز' ,5000000, ' تزويد للمركز الرئيسي من فئة 500'),
+--حركات استهلاك العملة الجديدة لصرفها للعملاء
+(1, 'صرف لعميل' ,-10000, 'استبدال عملة قديمة'),
+(1, 'صرف لعميل' ,-25000, 'استبدال عملة قديمة'),
+(1, 'صرف لعميل' ,-50000, 'استبدال عملة قديمة'),
+(1, 'صرف لعميل' ,-100000, 'استبدال عملة قديمة'),
+(1, 'صرف لعميل' ,-500000, 'استبدال عملة قديمة'),
+--حركة لتحويل من فرع مركزي لفرع آخر
+(1,'تحويل لفرع آخر' ,-5000000, ' تحويل مبلغ 5000000 لفرع حمص المركزي '),
+--حركة لاستلام المبلغ المحول من الفرع المركزي
+(2, 'تزويد للمركز' ,5000000, ' وصول مبلغ5000000 من المركز الرئيسي ')
 INSERT INTO CurrencyCategory_NewCurrencyMovement(MovementID, CurrencyCategoryID,Quantity) VALUES
---ÊæÒíÚ ÍÑßÉ ÇáÚãáÉ ÇáÌÏíÏÉ Úáì ÚÏÉ ÝÆÇÊ
+--توزيع حركة العملة الجديدة على عدة فئات
 (7,4,500),
 (7,7,50)
---ÊÚÏíá ãÏíäÉ ÝÑÚ ÏãÔÞ ÇáãÑßÒí ãä ÍáÈ Åáì ÏãÔÞ
-UPDATE Branch SET City='ÏãÔÞ' WHERE BranchName='ÝÑÚ ÏãÔÞ ÇáãÑßÒí' AND City='ÍáÈ'
-/*ÇÓÊÚáÇã íÚÑÖ ÃÓãÇÁ ÇáÚãáÇÁ ÇáÐíä ÇÓÊÈÏáæÇ ãÈáÛÇ ÞÏíãÇ íÊÌÇæÒ 10,000,000áíÑÉ Ýí íæã æÇÍÏ
- 7ãÚ ÊÑÊíÈ ÇáäÊÇÆÌ ÍÓÈ ÇáãÈáÛ ÊäÇÒáíÇ*/
+--استعلام يعرض أسماء العملاء الذين استبدلوا مبلغا قديما يتجاوز 10,000,000ليرة في يوم واحد مع ترتيب النتائج حسب المبلغ تنازليا
 SELECT c.FirstName+' '+c.LastName AS [Full Name],CAST(t.TransactionDate AS DATE) AS TransactionDate ,SUM(t.OldAmount)
 FROM Customer c 
 INNER JOIN [Transaction] t on c.CustomerID=t.CustomerID
 GROUP BY c.FirstName+' '+c.LastName,CAST(t.TransactionDate AS DATE)
 HAVING SUM(t.OldAmount)>10000000
 ORDER BY SUM(t.OldAmount) DESC
-/* ÇÓÊÚáÇã íÚÑÖ ÅÌãÇáí ÇáãÈÇáÛ ÇáÞÏíãÉ ÇáÊí ÇÓÊáãåÇ ßá ÝÑÚ ÎáÇá ÔåÑ ÂÐÇÑ  2026
-ãÑÊÈÉ ÍÓÈ ÇáÅÌãÇáí ÊäÇÒáíÇ8
+/* استعلام يعرض إجمالي المبالغ القديمة التي استلمها كل فرع خلال شهر آذار  2026
+مرتبة حسب الإجمالي تنازليا
 */
 SELECT b.BranchName,SUM(t.OldAmount) AS [Total Old Currency]
 FROM Branch b INNER JOIN [Transaction] t on b.BranchID=t.BranchID
 WHERE t.TransactionDate BETWEEN '2026-03-01' AND '2026-04-01'
 GROUP BY b.BranchName
 ORDER BY SUM(t.OldAmount) DESC
---ÍÐÝ ÈíÇäÇÊ Úãíá Úä ØÑíÞ ÊÚÏíá ÇáÚÇãæÏ9 IsDeleted Åáì 1
-UPDATE Customer SET IsDeleted=1 WHERE NationalNumber='08020003063'
---10ÅÖÇÝÉ ÇáÚÇãæÏ SuspicionLevel VARCHAR(20) Åáì ÌÏæá Customer
-ALTER TABLE Customer ADD SuspicionLevel VARCHAR(20) 
---11 ÊÚÏíá äæÚ ÈíÇäÇÊ ÇáÚÇãæÏ SuspicionLevel
-ALTER TABLE Customer ALTER COLUMN SuspicionLevel INT
---ÅäÔÇÁ ÞíÏ ãä äæÚ Check áíÕÈÍ ãÌÇáå Èíä 1-5
-ALTER TABLE Customer ADD CONSTRAINT CHK_Customer_SuspicionLevel CHECK(SuspicionLevel IN(1,2,3,4,5))
---12 íÌÈ ÍÐÝ ÇáÞíÏ ÇáãÑÊÈØ ÈÇáÚÇãæÏ SuspicionLevel áäÊßãä ãä ÍÐÝå
-ALTER TABLE Customer DROP CONSTRAINT CHK_Customer_SuspicionLevel
---ÍÐÝ ÇáÚÇãæÏ SuspicionLevel ãä ÌÏæá Customer
-ALTER TABLE Customer DROP COLUMN SuspicionLevel
---13 ÅäÔÇÁ ÝåÑÓ NONCLUSTERED ÛíÑ ÚäÞæÏí Úáì ÇáÚÇãæÏ NationalNumber Ýí ÇáÌÏæá Customer
+--إنشاء فهرس NONCLUSTERED غير عنقودي على العامود NationalNumber في الجدول Customer
 CREATE NONCLUSTERED INDEX NCI_Customer_NationalNumber ON Customer(NationalNumber);
---ÅäÔÇÁ ÝåÑÓ NONCLUSTERED ÛíÑ ÚäÞæÏí Úáì ÇáÚÇãæÏ TransactionDate Ýí ÇáÌÏæá Transaction
+--إنشاء فهرس NONCLUSTERED غير عنقودي على العامود TransactionDate في الجدول Transaction
 CREATE NONCLUSTERED INDEX NCI_Transaction_TransactionDate ON [Transaction](TransactionDate);
---ÍÐÝ ÇáÞíÏ ÇáÐí ÇäÔÆäÇå ÚäÏ ÅäÔÇÁ ÇáÌÏæá14 Transaction áÊÛíÑ ÔÑØ ÇáÊÍÞÞ ááÚÇãæÏ OldAmount
-ALTER TABLE [Transaction] DROP CONSTRAINT CHK_Transaction_OldAmount
---ÅäÔÇÁ ÞíÏ ÇáÊÍÞÞ ááÚÇãæÏ OldAmount
-ALTER TABLE [Transaction] ADD CONSTRAINT CHK_Transaction_OldAmount CHECK(OldAmount>1000 AND OldAmount<100000000)
---15 ÊÚØíá ÞíÏ ÇáÊÍÞÞ ÇáÐí ÇäÔÃäÇå ÓÇÈÞÇ
-ALTER TABLE [Transaction] NOCHECK CONSTRAINT CHK_Transaction_OldAmount
---ÅÚÇÏÉ ÊÝÚíá ÇáÞíÏ
-ALTER TABLE [Transaction] CHECK CONSTRAINT CHK_Transaction_OldAmount
---16 ÅäÔÇÁ View íáÎÕ áßá ÝÑÚ ÚÏÏ ÇáãÚÇãáÇÊ æ ÅÌãÇáí ÇáãÈÇáÛ ÇáÞÏíãÉ æ ÅÌãÇáí ÇáãÈÇáÛ ÇáÌÏíÏÉ
+--إنشاء View يلخص لكل فرع عدد المعاملات و إجمالي المبالغ القديمة و إجمالي المبالغ الجديدة
 CREATE VIEW Branch_Daily_Summary AS 
 SELECT b.BranchName,CAST(t.TransactionDate AS DATE) [Transaction Date],COUNT(*) AS [Number Of Transactions],SUM(t.OldAmount) AS [Total Old Amount],SUM(t.NewAmount) AS [Total New Amount]
 FROM Branch b INNER JOIN [Transaction] t ON b.BranchID=t.BranchID
 GROUP BY b.BranchName,CAST(t.TransactionDate AS DATE)
---17 ÅäÔÇÁ View áÚÑÖ ÈíÇäÇÊ ÇáÚãáÇÁ ÇáÐíä ÞÇãæÇ ÈãÚÇãáÇÊ Ýí ÃßËÑ ãä ÝÑÚ ÎáÇá 24 ÓÇÚÉ
+--إنشاء View لعرض بيانات العملاء الذين قاموا بمعاملات في أكثر من فرع خلال 24 ساعة
 CREATE VIEW Suspicious_Customers AS
 SELECT DISTINCT c.CustomerID,c.FirstName + ' ' + c.LastName AS [Full Name],c.NationalNumber,c.PassportNumber,c.Phone
 FROM Customer c
@@ -369,41 +345,16 @@ INNER JOIN [Transaction] t1 ON c.CustomerID = t1.CustomerID
 INNER JOIN [Transaction] t2 ON c.CustomerID = t2.CustomerID
 WHERE t1.BranchID != t2.BranchID  AND t1.TransactionID != t2.TransactionID  
 AND ABS(DATEDIFF(HOUR, t1.TransactionDate, t2.TransactionDate)) <= 24 
---18 ÇÓÊÚáÇã íÈÍË Úä ãæÙÝ ÇÓãå íÍÊæí Úáì ããÏæÍ æ ÑÞã åÇÊÝå íäÊåí È825
-SELECT FirstName+'  '+LastName[Full Name] FROM Employee
-WHERE FirstName+'  '+LastName LIKE '%ããÏæÍ%' AND Phone LIKE '%825'
---19 ÇÓÊÚáÇã íÈÍË Úä ÌãíÚ ÇáãÚÇãáÇÊ ÇáÊí ÊãÊ Ýí ÝÑÚ ÇáÍÓßÉ ÎáÇá Ãæá ÃÓÈæÚ ãä ÔåÑ ÂÐÇÑ
+--استعلام يبحث عن جميع المعاملات التي تمت في فرع الحسكة خلال أول أسبوع من شهر آذار
 SELECT t.TransactionID,t.OldAmount,t.NewAmount,t.Commission,t.TransactionDate 
 FROM [Transaction] t INNER JOIN Branch b ON t.BranchID=b.BranchID
-WHERE b.BranchName='ÝÑÚ ÇáÍÓßÉ ÇáãÑßÒí' AND t.TransactionDate BETWEEN '2026-03-01' AND '2026-03-08'
---20 ÅÚØÇÁ ÊÓÌíá ÏÎæá ááÃÏæÇÑ
-CREATE LOGIN BranchEmployeeLogin WITH PASSWORD = '123';
-CREATE LOGIN BranchManagerLogin WITH PASSWORD = '456';
-CREATE LOGIN CentralAuditorLogin WITH PASSWORD = '789';
---ÅäÔÇÁ ãÓÊÎÏãíä ááÃÏæÇÑ ÍÊì íÊãßäæÇ ãä ÊÓÌíá ÇáÏÎæá 
-CREATE USER BranchEmployee FOR LOGIN BranchEmployeeLogin;
-CREATE USER BranchManager FOR LOGIN BranchManagerLogin;
-CREATE USER CentralAuditor FOR LOGIN CentralAuditorLogin;
---ÅäÔÇÁ ÇáÃÏæÇÑ áÅÚØÇÁ ÇáÕáÇÍíÇÊ ááãÓÊÎÏãíä20Ã
-CREATE ROLE Branch_Employee;
-CREATE ROLE Branch_Manager;
-CREATE ROLE Central_Auditor;
---b20ÅÚØÇÁ ÕáÇÍíÉ Select,Insert Úáì ÇáÌÏæá Transaction ááÏæÑ Branch_Employee
-GRANT SELECT,INSERT ON [Transaction] TO Branch_Employee;
---ÅÚØÇÁ ÕáÇÍíÉ Select Úáì ÇáÌÏæá Customer ááÏæÑ Branch_Employee
-GRANT SELECT ON Customer TO Branch_Employee
---ÅÚØÇÁ ÇáÏæÑ20Ì Branch_Manager ÌãíÚ ÕáÇÍíÇÊ Branch_Employee
-ALTER ROLE Branch_Employee ADD MEMBER Branch_Manager;
---ÅÚØÇÁ ÕáÇÍíÉ Select Úáì ÇáÚÑÖ Branch_Daily_Summary ááÏæÑ Branch_Manager
-GRANT SELECT ON Branch_Daily_Summary TO Branch_Manager
---ÅÚØÇÁ ÕáÇÍíÉ20Ï Select Úáì ßá ÇáÌÏÇæá æ ÇáÚÑæÖ Ýí ÞÇÚÏÉ ÇáÈíÇäÇÊ ááÏæÑ Central_Auditor
-GRANT SELECT ON SCHEMA::dbo TO Central_Auditor
---21a ÇÓÊÚáÇã íÌÏ ÇáÝÑÚ ÇáÐí áÏíå ÃÚáì äÓÈÉ ãÆæíÉ ãä ÇáãÚÇãáÇÊ ÇáãÔÈæåÉ
+WHERE b.BranchName='فرع الحسكة المركزي' AND t.TransactionDate BETWEEN '2026-03-01' AND '2026-03-08'
+--استعلام يجد الفرع الذي لديه أعلى نسبة مئوية من المعاملات المشبوهة
 SELECT TOP 1 b.BranchName,ISNULL(SuspiciousTransactions.SuspiciousCount, 0) AS SuspiciousCount,
 TotalTransactions.TotalCount,
 STR(CAST(ISNULL(SuspiciousTransactions.SuspiciousCount, 0)*100 / TotalTransactions.TotalCount AS INT))+'%'AS SuspiciousPercentage
 FROM Branch b
---ÇÓÊÚáÇã ÝÑÚí áÍÓÇÈ ãÌãæÚ ÇáãÚÇãáÇÊ áßá ÝÑÚ
+--استعلام فرعي لحساب مجموع المعاملات لكل فرع
 LEFT JOIN (
     SELECT 
         BranchID, 
@@ -411,7 +362,7 @@ LEFT JOIN (
     FROM [Transaction]
     GROUP BY BranchID
 ) AS TotalTransactions ON b.BranchID = TotalTransactions.BranchID
---ÇÓÊÚáÇã ÝÑÚí áÍÓÇÈ ãÌãæÚ ÇáãÚÇãáÇÊ ÇáãÔÈæåÉ áßá ÝÑÚ
+--استعلام فرعي لحساب مجموع المعاملات المشبوهة لكل فرع
 LEFT JOIN (
     SELECT 
         t.BranchID,
@@ -421,26 +372,15 @@ LEFT JOIN (
     GROUP BY t.BranchID
 ) AS SuspiciousTransactions ON b.BranchID = SuspiciousTransactions.BranchID
 ORDER BY SuspiciousPercentage DESC
---21b ÇÓÊÚáÇã íÚÑÖ ÅÌãÇáí ÇáãÈÇáÛ ÇáÞÏíãÉ Ýí ßá ÝÑÚ áÃÔåÑ ßÇäæä ÇáËÇäí¡ÔÈÇØ¡ÂÐÇÑ
+--استعلام يعرض إجمالي المبالغ القديمة في كل فرع لأشهر كانون الثاني،شباط،آذار
 SELECT b.BranchName ,
-SUM(CASE WHEN MONTH(t.TransactionDate)=1 THEN t.OldAmount ELSE 0 END) AS 'ßÇäæä ÇáËÇäí 2026 ',
-SUM(CASE WHEN MONTH(t.TransactionDate)=2 THEN t.OldAmount ELSE 0 END) AS 'ÔÈÇØ 2026',
-SUM(CASE WHEN MONTH(t.TransactionDate)=3 THEN t.OldAmount ELSE 0 END) AS 'ÂÐÇÑ 2026 '
+SUM(CASE WHEN MONTH(t.TransactionDate)=1 THEN t.OldAmount ELSE 0 END) AS 'كانون الثاني 2026 ',
+SUM(CASE WHEN MONTH(t.TransactionDate)=2 THEN t.OldAmount ELSE 0 END) AS 'شباط 2026',
+SUM(CASE WHEN MONTH(t.TransactionDate)=3 THEN t.OldAmount ELSE 0 END) AS 'آذار 2026 '
 FROM Branch b LEFT JOIN [Transaction] t on b.BranchID=t.BranchID
 WHERE YEAR(t.TransactionDate)=2026
 GROUP BY b.BranchName
---22 a ÅäÔÇÁ äÓÎÉ ÇÍÊíÇØíÉ áÞÇÚÏÉ ÇáÈíÇäÇÊ Ýí ÇáãÓÇÑ ÇáÊÇáí
-DECLARE @FileName VARCHAR(50)
-SET @FileName='F:\CentralBank_CurrencySwap'+'_'+FORMAT(GETDATE(),'yyyy-MM-dd')+'.bak'
-BACKUP DATABASE CentralBank_CurrencySwap_DB 
-TO DISK =@FileName
--- 22 b ÇÓÊÚÇÏÉ ÞÇÚÏÉ ÇáÈíÇäÇÊ ãä ÇáäÓÎÉ ÇáÇÍÊíÇØíÉ ÇáÊí ÇäÔÃäÇåÇ
--- ÃæáÇ äÞæã ÈÊÛíÑ ÞÇÚÏÉ ÇáÈíÇäÇÊ ÇáãÓÊÎÏãÉ
-USE master
---ÇÓÊÚÇÏÉ ÞÇÚÏÉ ÇáÈíÇäÇÊ
-RESTORE DATABASE CentralBank_CurrencySwap_DB 
-FROM DISK = 'F:\CentralBank_CurrencySwap_2026-01-25.bak' WITH REPLACE
--- 23 ÇÓÊÚáÇã íÚÑÖ ÅÌãÇáí ÇáãÈÇáÛ ÇáãÓÊÎÏãÉ ãÌãÚÉ ÍÓÈ ßá ãÏíäÉ¡ßá ÝÑÚ ÏÇÎá ÇáãÏíäÉ¡ÇáãÌãæÚ Çáßáí
+--استعلام يعرض إجمالي المبالغ المستخدمة مجمعة حسب كل مدينة،كل فرع داخل المدينة،المجموع الكلي
 SELECT b.City,b.BranchName,
 GROUPING(b.City) 'Grouping City',GROUPING(b.BranchName) 'Grouping Branch',SUM(t.OldAmount) 'Total Old Amount'
 FROM Branch b INNER JOIN [Transaction] t ON b.BranchID=t.BranchID
